@@ -3,7 +3,7 @@ from nicegui import ui
 def run():
     # Page Header Panel
     ui.label('Lay Bet Calculator').classes('text-3xl font-bold text-slate-800 mb-2')
-    ui.label('Calculate lay stakes, liabilities, and profits for betting scenarios on Top Price Market prices.') \
+    ui.label('Calculate stakes, liabilities, and profits for betting scenarios on Top Price Market prices.') \
         .classes('text-gray-500 mb-6')
 
     # Component State Management Architecture
@@ -65,8 +65,8 @@ def run():
             # --- EQUAL PROFIT RESULTS COLUMN PANEL ---
             with ui.column().classes('flex-grow p-5 bg-slate-50 border border-gray-200 rounded-xl shadow-sm'):
                 ui.label('Equal Profit Strategy').classes('text-lg font-bold text-slate-800 underline mb-2')
-                ui.label(f"Lay Stake: {res['eq_stake']}€").classes('text-slate-700 font-medium')
-                ui.label(f"Liability Risk: {res['eq_liab']}€").classes('text-slate-700 font-medium')
+                ui.label(f"Bookmaker Stake: {res['eq_stake']}€").classes('text-slate-700 font-medium')
+                ui.label(f"Betfair Stake (Lay): {res['eq_liab']}€").classes('text-slate-700 font-medium')
                 ui.separator().classes('my-2')
                 
                 # If selection wins outcomes
@@ -82,8 +82,8 @@ def run():
             # --- ONE-WAY RESULTS COLUMN PANEL ---
             with ui.column().classes('flex-grow p-5 bg-slate-50 border border-gray-200 rounded-xl shadow-sm'):
                 ui.label('One-Way Strategy').classes('text-lg font-bold text-slate-800 underline mb-2')
-                ui.label(f"Lay Stake: {res['ow_stake']}€").classes('text-slate-700 font-medium')
-                ui.label(f"Liability Risk: {res['ow_liab']}€").classes('text-slate-700 font-medium')
+                ui.label(f"Bookmaker Stake: {res['ow_stake']}€").classes('text-slate-700 font-medium')
+                ui.label(f"Betfair Stake (Lay): {res['ow_liab']}€").classes('text-slate-700 font-medium')
                 ui.separator().classes('my-2')
                 
                 # If selection wins outcomes
