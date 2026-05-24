@@ -46,6 +46,13 @@ def run():
             data['diff_label'].set_text('—')
             data['status_badge'].classes('hidden')
 
+    # Helper to generate structural change handling variables safely
+    def make_change_handler(idx, field_ref):
+        return lambda e: [
+            rows_data[idx].update({field_ref: e.value or 0.0}),
+            calculate_row(idx)
+        ]
+
     # Render Grid Panels for the 5 Input Rows
     for i in range(5):
         with ui.row().classes('w-full items-center gap-6 mb-4 p-3 bg-slate-50 rounded-xl border border-gray-100 shadow-sm'):
@@ -53,23 +60,13 @@ def run():
             # Label Row items
             ui.label(f"Row {i+1}").classes('text-sm font-bold text-slate-400 w-12')
             
-            # Our Odds Inputs
-            our_in = ui.number(label="Our Odds", format="%.2f", step=0.01) \
-                .classes('w-32')
+            # Our Odds Inputs (Passing change handler cleanly inside parameters)
+            ui.number(label="Our Odds", format="%.2f", step=0.01, 
+                      on_change=make_change_handler(i, 'our_odds')).classes('w-32')
             
             # Competition Odds Inputs
-            comp_in = ui.number(label="Competition Odds", format="%.2f", step=0.01) \
-                .classes('w-32')
-
-            # Bind input updates to the dictionary matrix safely via event listeners
-            def make_change_handler(idx, input_type, field_ref):
-                return lambda e: [
-                    rows_data[idx].update({field_ref: e.value or 0.0}),
-                    calculate_row(idx)
-                ]
-
-            our_in.on_change(make_change_handler(i, 'our', 'our_odds'))
-            comp_in.on_change(make_change_handler(i, 'comp', 'comp_odds'))
+            ui.number(label="Competition Odds", format="%.2f", step=0.01, 
+                      on_change=make_change_handler(i, 'comp_odds')).classes('w-32')
 
             # Calculation Results Target Layout Blocks
             ui.label('Difference:').classes('text-sm font-medium text-gray-500 ml-4')
