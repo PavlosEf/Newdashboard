@@ -4,7 +4,8 @@ def run():
     ui.label('Sequential Acca Calculator').classes('text-3xl font-bold text-slate-800 mb-2')
     ui.label('Generate a complete overall hedging plan for multi-match accumulators with sequential game times.').classes('text-gray-500 mb-6')
 
-    # Component State Configuration
+    # Component State Configuration - Pre-allocated fixed list of 8 maximum slots
+    # to maintain a static rendering pipeline structure and eliminate NiceGUI reference errors
     state = {
         'num_legs': 3,
         'back_stake': 100.0,
@@ -12,26 +13,37 @@ def run():
         'back_comm': 0.0,
         'lay_comm': 2.0,
         'legs': [
-            {'back_odds': 1.5, 'lay_odds': 1.55},
-            {'back_odds': 1.8, 'lay_odds': 1.85},
-            {'back_odds': 2.0, 'lay_odds': 2.05},
-        ] + [{'back_odds': 2.0, 'lay_odds': 2.05} for _ in range(17)],
+            {'back_odds': 1.30, 'lay_odds': 1.25},
+            {'back_odds': 1.65, 'lay_odds': 1.60},
+            {'back_odds': 1.80, 'lay_odds': 1.72},
+            {'back_odds': 1.95, 'lay_odds': 1.87},
+            {'back_odds': 2.00, 'lay_odds': 1.92},
+            {'back_odds': 2.00, 'lay_odds': 2.00},
+            {'back_odds': 2.00, 'lay_odds': 2.00},
+            {'back_odds': 2.00, 'lay_odds': 2.00}
+        ],
         'results': None
     }
 
     def calculate_sequential_acca():
-        n = state['num_legs']
-        b_stake = state['back_stake']
-        boost = state['acca_boost'] / 100.0
-        b_comm = state['back_comm'] / 100.0
-        l_comm = state['lay_comm'] / 100.0
+        n = int(state['num_legs'])
+        b_stake = float(state['back_stake'])
+        boost = float(state['acca_boost']) / 100.0
+        b_comm = float(state['back_comm']) / 100.0
+        l_comm = float(state['lay_comm']) / 100.0
         
         current_legs = state['legs'][:n]
+        
+        # Interlocking validation checks
+        for idx, leg in enumerate(current_legs):
+            if float(leg['back_odds']) <= 1.0 or float(leg['lay_odds']) <= 1.0:
+                ui.notify(f"Invalid odds detected in Match {idx+1}. Odds must be greater than 1.00.", type='warning')
+                return
         
         # Calculate total combined back odds
         total_back_odds = 1.0
         for leg in current_legs:
-            total_back_odds *= leg['back_odds']
+            total_back_odds *= float(leg['back_odds'])
             
         bookie_gross_return = b_stake * total_back_odds
         bookie_net_win_before_boost = (bookie_gross_return - b_stake) * (1.0 - b_comm)
@@ -44,7 +56,7 @@ def run():
         B_list = []
         
         for leg in current_legs:
-            lay_odd = leg['lay_odds']
+            lay_odd = float(leg['lay_odds'])
             a_k = (1.0 + C) / (1.0 - l_comm)
             b_k = (b_stake + D) / (1.0 - l_comm)
             
@@ -59,9 +71,8 @@ def run():
         legs_results = []
         for i, (a, b, leg) in enumerate(zip(A_list, B_list, current_legs)):
             stk = a * P + b
-            liab = stk * (leg['lay_odds'] - 1.0)
+            liab = stk * (float(leg['lay_odds']) - 1.0)
             
-            # Setup simple, descriptive status badges for clear workflow guidance
             if i == 0:
                 status_txt = "👉 LAY NOW (First Match)"
                 status_cls = "bg-green-50 text-green-700 border border-green-200"
@@ -85,21 +96,35 @@ def run():
         }
         results_panel.refresh()
 
+    def handle_leg_count_change(e):
+        val = int(e.value or 3)
+        if val < 2:
+            val = 2
+        if val > 8:
+            val = 8
+        state['num_legs'] = val
+        state['results'] = None
+        legs_inputs_renderer.refresh()
+        results_panel.refresh()
+
     @ui.refreshable
     def legs_inputs_renderer():
         with ui.column().classes('w-full gap-3 bg-slate-50 p-4 rounded-xl border border-gray-200 shadow-sm mb-4'):
             ui.label('Accumulator Legs Parameters').classes('text-xs font-bold text-slate-400 uppercase tracking-wider')
-            for i in range(state['num_legs']):
-                with ui.row().classes('w-full gap-4 items-center wrap'):
-                    ui.label(f"Match {i+1}:").classes('font-bold text-slate-700 w-20')
-                    
-                    def make_back_handler(idx):
-                        return lambda e: state['legs'][idx].update({'back_odds': e.value or 1.01})
-                    def make_lay_handler(idx):
-                        return lambda e: state['legs'][idx].update({'lay_odds': e.value or 1.01})
+            
+            # Render elements statically from the fixed state buffer and manipulate visibility
+            # to guarantee the layout hierarchy stays secure during rendering passes
+            for i in range(8):
+                is_visible = i < state['num_legs']
+                with ui.row().classes('w-full gap-4 items-center wrap' + ('' if is_visible else ' hidden')) as row:
+                    if is_visible:
+                        ui.label(f"Match {i+1}:").classes('font-bold text-slate-700 w-20')
                         
-                    ui.number(label='Back Odds', value=state['legs'][i]['back_odds'], format="%.2f", step=0.01, on_change=make_back_handler(i)).classes('flex-grow')
-                    ui.number(label='Lay Odds', value=state['legs'][i]['lay_odds'], format="%.2f", step=0.01, on_change=make_lay_handler(i)).classes('flex-grow')
+                        # Closed default parameter scopes (idx=i) to secure values and avoid index bleed traps
+                        ui.number(label='Back Odds', value=state['legs'][i]['back_odds'], format="%.2f", step=0.01,
+                                  on_change=lambda e, idx=i: state['legs'][idx].update({'back_odds': e.value or 1.01})).classes('flex-grow')
+                        ui.number(label='Lay Odds', value=state['legs'][i]['lay_odds'], format="%.2f", step=0.01,
+                                  on_change=lambda e, idx=i: state['legs'][idx].update({'lay_odds': e.value or 1.01})).classes('flex-grow')
 
     @ui.refreshable
     def results_panel():
@@ -121,10 +146,11 @@ def run():
             ui.label('Sequential Lay Schedule Action Plan').classes('text-xs font-bold text-gray-400 uppercase tracking-wider mb-3')
             
             for leg in res['legs']:
+                status_classes = str(leg['status_class'])
                 with ui.row().classes('w-full p-4 bg-white rounded-xl border border-gray-200 items-center justify-between shadow-sm mb-3 wrap gap-2'):
                     with ui.column().classes('gap-0.5'):
                         ui.label(f"Match {leg['leg_idx']}").classes('font-black text-slate-800 text-base')
-                        ui.label(leg['status_text']).classes(f"text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide {leg['status_class']}")
+                        ui.label(leg['status_text']).classes(f"text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide {status_classes}")
                     
                     with ui.row().classes('gap-6'):
                         with ui.column().classes('items-end'):
@@ -134,19 +160,10 @@ def run():
                             ui.label('LIABILITY').classes('text-[10px] text-gray-400 font-bold tracking-widest')
                             ui.label(f"{leg['liability']:.2f}€").classes('text-lg font-bold text-red-600')
 
-    def adjust_leg_count(e):
-        val = int(e.value or 3)
-        if val < 2:
-            val = 2
-        state['num_legs'] = val
-        state['results'] = None
-        legs_inputs_renderer.refresh()
-        results_panel.refresh()
-
     with ui.column().classes('w-full max-w-4xl gap-4'):
         with ui.row().classes('w-full items-center gap-4 mb-2'):
             ui.label('Enter Number of Matches (Legs):').classes('font-medium text-slate-700')
-            ui.number(value=state['num_legs'], format="%d", step=1, on_change=adjust_leg_count).classes('w-24')
+            ui.number(value=state['num_legs'], format="%d", step=1, on_change=handle_leg_count_change).classes('w-24')
 
         legs_inputs_renderer()
 
