@@ -124,7 +124,7 @@ def run():
                 with ui.row().classes('w-full p-4 bg-white rounded-xl border border-gray-200 items-center justify-between shadow-sm mb-3 wrap gap-2'):
                     with ui.column().classes('gap-0.5'):
                         ui.label(f"Match {leg['leg_idx']}").classes('font-black text-slate-800 text-base')
-                        ui.label(leg['status_text']).classes(f'text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide {leg['status_class']}')
+                        ui.label(leg['status_text']).classes(f"text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide {leg['status_class']}")
                     
                     with ui.row().classes('gap-6'):
                         with ui.column().classes('items-end'):
