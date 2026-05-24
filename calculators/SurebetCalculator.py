@@ -3,14 +3,13 @@ from nicegui import ui
 def run():
     # Header Section
     ui.label('Single-Bet Multi-Outcome Surebet Calculator').classes('text-3xl font-bold text-slate-800 mb-2')
-    ui.label('Dynamically add up to 6 outcomes to calculate individual single-market stakes and arbitrage profits.') \
+    ui.label('Dynamically configure an unlimited number of outcomes to calculate individual stakes and arbitrage profits.') \
         .classes('text-gray-500 mb-6')
 
     # State Schema
     state = {
         'num_outcomes': 2,
-        'odds': [2.00, 2.50, 3.00, 4.00, 5.00, 6.00],
-        'labels': ["Outcome 1 (Kaizen)", "Outcome 2 (Comp)", "Outcome 3", "Outcome 4", "Outcome 5", "Outcome 6"],
+        'odds': [2.00, 2.50] + [2.00] * 98,  # Αρχικοποίηση λίστας για έως 100 outcomes
         'kaizen_stake': 0.0,
         'total_stake': 100.0,
         'stakes': [],
@@ -20,7 +19,7 @@ def run():
         'results_ready': False
     }
 
-    # Core Mathematical Formulas (Your exact calculation logic)
+    # Core Mathematical Formulas (Your exact calculation logic applied to N outcomes)
     def calculate_surebet():
         n = state['num_outcomes']
         current_odds = state['odds'][:n]
@@ -76,7 +75,8 @@ def run():
                     def build_change_handler(idx):
                         return lambda e: state['odds'].__setitem__(idx, e.value or 1.01)
                     
-                    ui.number(label=state['labels'][i], value=state['odds'][i], format="%.2f", step=0.01,
+                    label_name = "Outcome 1 (Kaizen)" if i == 0 else f"Outcome {i+1} (Comp)"
+                    ui.number(label=label_name, value=state['odds'][i], format="%.2f", step=0.01,
                               on_change=build_change_handler(i)).classes('w-40 flex-grow')
 
     # Dynamic Results Summary Display Block
@@ -88,13 +88,14 @@ def run():
         arb_color = 'text-green-600' if state['arbitrage_pct'] > 0 else 'text-red-600'
 
         with ui.column().classes('w-full mt-6 p-6 bg-slate-50 border border-gray-200 rounded-xl shadow-sm'):
-            ui.label("Calculation Matrix Matrix Summary").classes('text-xl font-bold text-slate-800 mb-4 underline')
+            ui.label("Calculation Matrix Summary").classes('text-xl font-bold text-slate-800 mb-4 underline')
             
             with ui.row().classes('w-full justify-between gap-6 wrap'):
                 with ui.column().classes('flex-grow min-w-[200px] gap-1'):
                     ui.label("Target Outcome Stakes").classes('font-bold text-gray-400 text-xs tracking-wider uppercase mb-1')
                     for i in range(state['num_outcomes']):
-                        ui.label(f"{state['labels'][i]}: {state['stakes'][i]}€").classes('text-base text-slate-700 font-medium')
+                        label_name = "Outcome 1 (Kaizen)" if i == 0 else f"Outcome {i+1}"
+                        ui.label(f"{label_name}: {state['stakes'][i]}€").classes('text-base text-slate-700 font-medium')
 
                 with ui.column().classes('flex-grow min-w-[200px] gap-1'):
                     ui.label("Net Profit Breakdown").classes('font-bold text-gray-400 text-xs tracking-wider uppercase mb-1')
@@ -109,9 +110,12 @@ def run():
                 ui.label(f"Total Cumulative Stake: {state['calculated_total_stake']}€").classes('text-lg font-bold text-slate-800')
                 ui.label(f"Arbitrage Percentage: {state['arbitrage_pct']}%").classes(f'text-xl font-black {arb_color}')
 
-    # Dropdown change event intercept
+    # Input number change event intercept
     def adjust_outcome_count(e):
-        state['num_outcomes'] = int(e.value)
+        val = int(e.value or 2)
+        if val < 2:  # Safe minimum guard
+            val = 2
+        state['num_outcomes'] = val
         state['results_ready'] = False
         odds_fields_renderer.refresh()
         results_renderer.refresh()
@@ -119,8 +123,9 @@ def run():
     # Layout Controls Configuration Panel
     with ui.column().classes('w-full max-w-4xl gap-4'):
         with ui.row().classes('w-full items-center gap-4 mb-2'):
-            ui.label('Select Number of Market Outcomes:').classes('font-medium text-slate-700')
-            ui.select([2, 3, 4, 5, 6], value=state['num_outcomes'], on_change=adjust_outcome_count).classes('w-24')
+            ui.label('Enter Number of Market Outcomes:').classes('font-medium text-slate-700')
+            # Αντικατάσταση του ui.select με ui.number για ελεύθερη εισαγωγή
+            ui.number(value=state['num_outcomes'], format="%d", step=1, on_change=adjust_outcome_count).classes('w-24')
 
         # Generate inputs
         odds_fields_renderer()
