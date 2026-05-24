@@ -1,6 +1,6 @@
 from nicegui import ui
 
-# Import your upcoming calculators from the local calculators package
+# Import your calculators from the local calculators package
 import calculators.MultipleSurebetCalculator as MultipleSurebetCalculator
 import calculators.AlternativeLinesConverter as AlternativeLinesConverter
 import calculators.CurrencyConverter as CurrencyConverter
@@ -8,7 +8,7 @@ import calculators.MarginsRemoval as MarginsRemoval
 import calculators.OffPricesCalculator as OffPricesCalculator
 import calculators.PercentageCalculations as PercentageCalculations
 import calculators.SurebetCalculator as SurebetCalculator
-import calculators.TimeCalculator as TimeCalculator
+import calculators.TopPriceBetfairCalculator as TopPriceBetfairCalculator
 
 def create_dashboard():
     # 1. Top Application Bar
@@ -30,7 +30,7 @@ def create_dashboard():
                 tab_alt_lines = ui.tab('Alternative Lines Converter')
                 tab_percentage = ui.tab('Percentage (%) Calculations')
                 tab_currency = ui.tab('Currency Converter')
-                tab_time = ui.tab('Current Time Calculator')
+                tab_topprice = ui.tab('Lay Bet Calculator')
                 
         # Right Side Content Container Area
         with ui.column().classes('flex-grow p-8 bg-white h-full overflow-y-auto'):
@@ -57,8 +57,8 @@ def create_dashboard():
                 with ui.tab_panel(tab_currency):
                     CurrencyConverter.run()
 
-                with ui.tab_panel(tab_time):
-                    TimeCalculator.run()
+                with ui.tab_panel(tab_topprice):
+                    TopPriceBetfairCalculator.run()
 
 # Build and execute app structure
 create_dashboard()
