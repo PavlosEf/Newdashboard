@@ -9,6 +9,7 @@ import calculators.OffPricesCalculator as OffPricesCalculator
 import calculators.PercentageCalculations as PercentageCalculations
 import calculators.SurebetCalculator as SurebetCalculator
 import calculators.TopPriceBetfairCalculator as TopPriceBetfairCalculator
+import calculators.SequentialAccaCalculator as SequentialAccaCalculator
 
 def render_guide():
     """Renders the simple, step-by-step English manual approved by the user."""
@@ -81,9 +82,23 @@ def render_guide():
               * **Net Market Profit:** Shows your final net returns for both scenarios so you can easily compare your options.
             ''')
 
-        # 5. Alternative Lines Converter
+        # 5. Sequential Acca Calculator
+        with ui.card().classes('w-full p-5 bg-slate-50 border-l-4 border-blue-500 shadow-sm'):
+            ui.label('5. Sequential Acca Calculator').classes('text-lg font-bold text-slate-800 mb-2')
+            ui.markdown('''
+            * **What it is:** A specialized tool for hedging accumulator bets (paroli) when the matches are played at different times (sequentially). It locks in a guaranteed equal profit regardless of when or where the accumulator wins or breaks.
+            * **What to do:**
+              1. Select the number of matches (legs) in your accumulator.
+              2. Enter the **Back Odds** from the bookmaker and the current **Lay Odds** from Betfair for each match.
+              3. Enter your **Back Stake**, any **Acca Boost (%)** bonus, and the exchange commission rate.
+              4. Click **Calculate Sequential Lay Matrix**.
+            * **What you see:**
+              * A step-by-step guide for each match. It tells you exactly how much to lay on Betfair for Match 1. If Match 1 wins at the bookmaker, you proceed to Match 2 and lay the next specified amount. If any match loses at the bookmaker, the acca is broken, you stop, and you walk away with the exact same guaranteed net profit.
+            ''')
+
+        # 6. Alternative Lines Converter
         with ui.card().classes('w-full p-5 bg-slate-50 border-l-4 border-slate-500 shadow-sm'):
-            ui.label('5. Alternative Lines Converter').classes('text-lg font-bold text-slate-800 mb-2')
+            ui.label('6. Alternative Lines Converter').classes('text-lg font-bold text-slate-800 mb-2')
             ui.markdown('''
             * **⚠️ Important Note:** This tool is experimental. Because different bookmakers apply different margins to different markets, the actual outcome in the real market may differ, but it will stay close to the results shown here.
             * **What it is:** A utility that allows you to translate a betting line from one bookmaker to match a different line from another bookmaker (for example, converting odds for Over 2.5 goals to see what the fair odds would be for Over 3.5 goals).
@@ -95,9 +110,9 @@ def render_guide():
               * **Converted Fair Odds:** The calculated fair price for the alternative line. This lets you immediately check if a competitor's alternative line is giving you good value or if it is priced too low.
             ''')
 
-        # 6. Percentage Calculations
+        # 7. Percentage Calculations
         with ui.card().classes('w-full p-5 bg-slate-50 border-l-4 border-slate-500 shadow-sm'):
-            ui.label('6. Percentage (%) Calculations').classes('text-lg font-bold text-slate-800 mb-2')
+            ui.label('7. Percentage (%) Calculations').classes('text-lg font-bold text-slate-800 mb-2')
             ui.markdown('''
             * **What it is:** A quick, everyday math toolbox designed to handle rapid percentage calculations for your stakes, bankroll, or profits.
             * **What to do:**
@@ -108,9 +123,9 @@ def render_guide():
               * **Result:** A simple, direct text answer displaying the exact mathematical calculation instantly.
             ''')
 
-        # 7. Currency Converter
+        # 8. Currency Converter
         with ui.card().classes('w-full p-5 bg-slate-50 border-l-4 border-slate-500 shadow-sm'):
-            ui.label('7. Currency Converter').classes('text-lg font-bold text-slate-800 mb-2')
+            ui.label('8. Currency Converter').classes('text-lg font-bold text-slate-800 mb-2')
             ui.markdown('''
             * **What it is:** A tool that converts money values between different global currencies using live, real-time exchange rates. This is ideal if you are tracking balances or placing bets across bookmakers that use different currencies (like Euros, Dollars, or Pounds).
             * **What to do:**
@@ -142,6 +157,7 @@ def create_dashboard():
                 tab_surebet = ui.tab('Surebet Calculator')
                 tab_margins = ui.tab('Margins Removal')
                 tab_topprice = ui.tab('Lay Bet Calculator')
+                tab_sequential = ui.tab('Sequential Acca Calculator')
                 
                 ui.label('UTILITIES').classes('text-xs font-bold text-gray-400 tracking-widest mt-4 mb-1')
                 tab_alt_lines = ui.tab('Alternative Lines Converter')
@@ -166,6 +182,9 @@ def create_dashboard():
 
                 with ui.tab_panel(tab_topprice):
                     TopPriceBetfairCalculator.run()
+
+                with ui.tab_panel(tab_sequential):
+                    SequentialAccaCalculator.run()
 
                 with ui.tab_panel(tab_alt_lines):
                     AlternativeLinesConverter.run()
