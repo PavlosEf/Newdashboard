@@ -1,7 +1,6 @@
 from nicegui import ui
 
 # Import your calculators from the local calculators package
-import calculators.MultipleSurebetCalculator as MultipleSurebetCalculator
 import calculators.AlternativeLinesConverter as AlternativeLinesConverter
 import calculators.CurrencyConverter as CurrencyConverter
 import calculators.MarginsRemoval as MarginsRemoval
@@ -24,8 +23,7 @@ def create_dashboard():
             
             with ui.tabs().classes('w-full items-start').props('vertical') as tabs:
                 tab_off_prices = ui.tab('Off Prices Calculator')
-                tab_surebet_2w = ui.tab('2-Way Surebet')
-                tab_surebet_multi = ui.tab('Multi-Way Surebet')
+                tab_surebet = ui.tab('Surebet Calculator')
                 tab_margins = ui.tab('Margins Removal')
                 tab_alt_lines = ui.tab('Alternative Lines Converter')
                 tab_percentage = ui.tab('Percentage (%) Calculations')
@@ -39,11 +37,8 @@ def create_dashboard():
                 with ui.tab_panel(tab_off_prices):
                     OffPricesCalculator.run()
                     
-                with ui.tab_panel(tab_surebet_2w):
+                with ui.tab_panel(tab_surebet):
                     SurebetCalculator.run()
-                    
-                with ui.tab_panel(tab_surebet_multi):
-                    MultipleSurebetCalculator.run()
                     
                 with ui.tab_panel(tab_margins):
                     MarginsRemoval.run()
