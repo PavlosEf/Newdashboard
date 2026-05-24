@@ -9,7 +9,7 @@ def run():
     # State Schema
     state = {
         'num_outcomes': 2,
-        'odds': [2.00, 2.50] + [2.00] * 98,  # Αρχικοποίηση λίστας για έως 100 outcomes
+        'odds': [2.00, 2.50] + [2.00] * 98,  # Αρχικοποίηση λίστα για έως 100 outcomes
         'kaizen_stake': 0.0,
         'total_stake': 100.0,
         'stakes': [],
@@ -75,9 +75,9 @@ def run():
                     def build_change_handler(idx):
                         return lambda e: state['odds'].__setitem__(idx, e.value or 1.01)
                     
-                    label_name = "Outcome 1 (Kaizen)" if i == 0 else f"Outcome {i+1} (Comp)"
+                    label_name = "Outcome 1 (Basic bookmaker)" if i == 0 else f"Outcome {i+1} (Competition)"
                     ui.number(label=label_name, value=state['odds'][i], format="%.2f", step=0.01,
-                              on_change=build_change_handler(i)).classes('w-40 flex-grow')
+                              on_change=build_change_handler(i)).classes('w-44 flex-grow')
 
     # Dynamic Results Summary Display Block
     @ui.refreshable
@@ -94,15 +94,16 @@ def run():
                 with ui.column().classes('flex-grow min-w-[200px] gap-1'):
                     ui.label("Target Outcome Stakes").classes('font-bold text-gray-400 text-xs tracking-wider uppercase mb-1')
                     for i in range(state['num_outcomes']):
-                        label_name = "Outcome 1 (Kaizen)" if i == 0 else f"Outcome {i+1}"
+                        label_name = "Outcome 1 (Basic bookmaker)" if i == 0 else f"Outcome {i+1} (Competition)"
                         ui.label(f"{label_name}: {state['stakes'][i]}€").classes('text-base text-slate-700 font-medium')
 
                 with ui.column().classes('flex-grow min-w-[200px] gap-1'):
                     ui.label("Net Profit Breakdown").classes('font-bold text-gray-400 text-xs tracking-wider uppercase mb-1')
                     for i in range(state['num_outcomes']):
+                        label_name = "Outcome 1" if i == 0 else f"Outcome {i+1}"
                         p_val = state['profits'][i]
                         p_color = 'text-green-600' if p_val >= 0 else 'text-red-600'
-                        ui.label(f"Profit {i+1}: {p_val}€").classes(f'text-base font-bold {p_color}')
+                        ui.label(f"Profit ({label_name}): {p_val}€").classes(f'text-base font-bold {p_color}')
             
             ui.separator().classes('my-4')
             
@@ -124,7 +125,6 @@ def run():
     with ui.column().classes('w-full max-w-4xl gap-4'):
         with ui.row().classes('w-full items-center gap-4 mb-2'):
             ui.label('Enter Number of Market Outcomes:').classes('font-medium text-slate-700')
-            # Αντικατάσταση του ui.select με ui.number για ελεύθερη εισαγωγή
             ui.number(value=state['num_outcomes'], format="%d", step=1, on_change=adjust_outcome_count).classes('w-24')
 
         # Generate inputs
@@ -132,9 +132,9 @@ def run():
 
         ui.label('Enter Specific Stake Allocations').classes('text-xs font-bold text-slate-400 tracking-wider uppercase mt-2')
         with ui.row().classes('w-full gap-4 mb-6'):
-            ui.number('Kaizen Fixed Stake (€)', value=state['kaizen_stake'], format="%.2f", step=1.0,
+            ui.number('Basic Bookmaker Stake (€)', value=state['kaizen_stake'], format="%.2f", step=1.0,
                       on_change=lambda e: state.update({'kaizen_stake': e.value or 0.0})).classes('flex-grow')
-            ui.number('Global Total Stake (€)', value=state['total_stake'], format="%.2f", step=1.0,
+            ui.number('Equally splitted stake (€)', value=state['total_stake'], format="%.2f", step=1.0,
                       on_change=lambda e: state.update({'total_stake': e.value or 0.0})).classes('flex-grow')
 
         # Action Execution Link Block
