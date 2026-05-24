@@ -2,7 +2,7 @@ from nicegui import ui
 
 def run():
     ui.label('Sequential Acca Calculator').classes('text-3xl font-bold text-slate-800 mb-2')
-    ui.label('Lock in equal guaranteed profits for multi-match accumulators when games are played at different times.').classes('text-gray-500 mb-6')
+    ui.label('Generate a complete overall hedging plan for multi-match accumulators with sequential game times.').classes('text-gray-500 mb-6')
 
     # Component State Configuration
     state = {
@@ -60,10 +60,21 @@ def run():
         for i, (a, b, leg) in enumerate(zip(A_list, B_list, current_legs)):
             stk = a * P + b
             liab = stk * (leg['lay_odds'] - 1.0)
+            
+            # Setup simple, descriptive status badges for clear workflow guidance
+            if i == 0:
+                status_txt = "👉 LAY NOW (First Match)"
+                status_cls = "bg-green-50 text-green-700 border border-green-200"
+            else:
+                status_txt = f"⏳ Lay ONLY if Match {i} Wins"
+                status_cls = "bg-amber-50 text-amber-700 border border-amber-200"
+
             legs_results.append({
                 'leg_idx': i + 1,
                 'lay_stake': round(stk, 2),
                 'liability': round(liab, 2),
+                'status_text': status_txt,
+                'status_class': status_cls
             })
             
         state['results'] = {
@@ -99,22 +110,29 @@ def run():
         profit_color = 'text-green-600' if res['guaranteed_profit'] >= 0 else 'text-red-600'
         
         with ui.column().classes('w-full p-6 bg-slate-50 border border-gray-200 rounded-xl shadow-sm mt-4'):
-            ui.label('Guaranteed Matrix Outputs').classes('text-xl font-bold text-slate-800 mb-4 underline')
+            ui.label('Guaranteed Overall Plan Metrics').classes('text-xl font-bold text-slate-800 mb-4 underline')
             
             with ui.row().classes('w-full justify-between wrap gap-4 mb-4'):
                 ui.label(f"Total Accumulator Odds: {res['total_back_odds']:.2f}").classes('text-sm font-medium text-slate-700')
                 ui.label(f"Bookmaker Net Profit (If All Win): {res['bookie_net_win']:.2f}€").classes('text-sm font-medium text-slate-700')
                 ui.label(f"Guaranteed Equal Profit: {res['guaranteed_profit']:.2f}€").classes(f'text-lg font-black {profit_color}')
                 
-            ui.separator().classes('my-2')
-            ui.label('Step-by-Step Lay Schedule Instructions').classes('text-xs font-bold text-gray-400 uppercase tracking-wider mb-2')
+            ui.separator().classes('my-4')
+            ui.label('Sequential Lay Schedule Action Plan').classes('text-xs font-bold text-gray-400 uppercase tracking-wider mb-3')
             
             for leg in res['legs']:
-                with ui.row().classes('w-full p-3 bg-white rounded-lg border border-gray-100 items-center justify-between shadow-sm mb-2'):
-                    ui.label(f"Match {leg['leg_idx']}").classes('font-bold text-slate-800')
-                    ui.label(f"Lay Stake: {leg['lay_stake']:.2f}€").classes('text-slate-700 font-medium')
-                    ui.label(f"Betfair Liability: {leg['liability']:.2f}€").classes('text-slate-700 font-medium')
-                    ui.label('Action if Reached').classes('text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-bold uppercase tracking-wide')
+                with ui.row().classes('w-full p-4 bg-white rounded-xl border border-gray-200 items-center justify-between shadow-sm mb-3 wrap gap-2'):
+                    with ui.column().classes('gap-0.5'):
+                        ui.label(f"Match {leg['leg_idx']}").classes('font-black text-slate-800 text-base')
+                        ui.label(leg['status_text']).classes(f'text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wide {leg['status_class']}')
+                    
+                    with ui.row().classes('gap-6'):
+                        with ui.column().classes('items-end'):
+                            ui.label('LAY STAKE').classes('text-[10px] text-gray-400 font-bold tracking-widest')
+                            ui.label(f"{leg['lay_stake']:.2f}€").classes('text-lg font-bold text-slate-700')
+                        with ui.column().classes('items-end'):
+                            ui.label('LIABILITY').classes('text-[10px] text-gray-400 font-bold tracking-widest')
+                            ui.label(f"{leg['liability']:.2f}€").classes('text-lg font-bold text-red-600')
 
     def adjust_leg_count(e):
         val = int(e.value or 3)
@@ -139,7 +157,7 @@ def run():
             ui.number('Bookie Tax/Comm (%)', value=state['back_comm'], format="%.1f", step=0.5, on_change=lambda e: state.update({'back_comm': e.value or 0.0})).classes('flex-grow')
             ui.number('Betfair Comm (%)', value=state['lay_comm'], format="%.1f", step=0.5, on_change=lambda e: state.update({'lay_comm': e.value or 0.0})).classes('flex-grow')
 
-        ui.button('Calculate Sequential Lay Matrix', on_click=calculate_sequential_acca) \
+        ui.button('Calculate Sequential Lay Matrix Plan', on_click=calculate_sequential_acca) \
             .classes('w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-blue-700 transition-all')
 
         results_panel()
