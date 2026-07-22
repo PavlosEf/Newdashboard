@@ -313,6 +313,15 @@ def render_guide():
               * **Exchange Rate:** The exact conversion multiplier currently being used.
             ''')
 
+def render_remote_app(title: str, description: str, url: str):
+    ui.label(title).classes('text-3xl font-bold text-slate-800 mb-2')
+    ui.label(description).classes('text-gray-500 mb-6')
+    ui.link('Open ' + title + ' →', url, new_tab=True) \
+        .classes('inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-xl shadow-md hover:bg-blue-700 transition-all no-underline')
+    ui.label("Only reachable while the home PC is on. You'll be asked for its password.") \
+        .classes('text-xs text-gray-400 mt-3')
+
+
 def create_dashboard():
     # 1. Top Application Bar
     with ui.header().classes('bg-slate-900 text-white items-center justify-between px-6 py-4 shadow-md'):
@@ -339,7 +348,11 @@ def create_dashboard():
                 tab_alt_lines = ui.tab('Alternative Lines Converter')
                 tab_percentage = ui.tab('Percentage (%) Calculations')
                 tab_currency = ui.tab('Currency Converter')
-                
+
+                ui.label('REMOTE ACCESS').classes('text-xs font-bold text-gray-400 tracking-widest mt-4 mb-1')
+                tab_sportsdb = ui.tab('Sports DB')
+                tab_polymarket = ui.tab('Polymarket')
+
         # Right Side Content Container Area
         with ui.column().classes('flex-grow p-8 bg-white h-full overflow-y-auto'):
             with ui.tab_panels(tabs, value=tab_guide).classes('w-full h-full'):
@@ -370,6 +383,20 @@ def create_dashboard():
                     
                 with ui.tab_panel(tab_currency):
                     CurrencyConverter.run()
+
+                with ui.tab_panel(tab_sportsdb):
+                    render_remote_app(
+                        'Sports DB',
+                        'Sports data warehouse and pricing models, running on the home PC.',
+                        'https://pkot.tailf37e23.ts.net',
+                    )
+
+                with ui.tab_panel(tab_polymarket):
+                    render_remote_app(
+                        'Polymarket',
+                        'Prediction market tracker, running on the home PC.',
+                        'https://pkot.tailf37e23.ts.net:8443',
+                    )
 
 # Build and execute app structure
 create_dashboard()
